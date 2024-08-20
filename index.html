@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Dodge Game</title>
+    <style>
+        *{
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+        .cont {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #333;
+        }
+
+        canvas {
+            background-color: #444; 
+        }
+
+        #score {
+            color: white;
+            font-size: 24px;
+            position: absolute;
+            top: 10px;
+            left: 10px;
+        }
+        
+        .start, .over{
+            height: 80%;
+            width: 60%;
+           position: absolute;
+           background-color: rgba(105, 112, 112, 0.109);
+           display: flex;
+           justify-content: center;
+           flex-direction: column;
+           align-items: center;
+           gap: 100px;
+        
+        }
+        .over{
+            display: none;
+        }
+        h1{
+            font-size: 100px;
+            text-align: center;
+            color: aliceblue;
+            
+        }
+        h2{
+            font-size: 50px;
+            color: aliceblue;
+        }
+        #strbtn, #overbtn{
+         height: 100px;
+         width: 200px;
+         background-color: rgb(46, 49, 49);
+         text-align: center;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         font-size: 80px;
+         color: aliceblue;
+         border-radius: 20px;
+         border: 2px solid green;
+        }
+        #strbtn:hover , #overbtn:hover{
+            color: #333;
+            background-color: green;
+            border-color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="cont">
+        <div id="score">Score: 0</div>
+        <canvas id="gameCanvas" width="400" height="600"></canvas>
+        <div class="start">
+            <h1>Welcome To Car Dodge Game!!</h1>
+            <div id="strbtn">Start</div>
+        </div>
+        <div class="over">
+            <h1>Game Over!!</h1>
+            <h2 id="scdis"> </h2>
+        </div>
+    </div>
+    
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreDisplay = document.getElementById('score');
+        const start = document.querySelector('.start');
+        const strbtn = document.querySelector('#strbtn');
+        const overbtn = document.querySelector('#overbtn');
+        const over = document.querySelector('.over');
+        const scdis = document.querySelector('#scdis');
+
+        let car = {
+            x: 180,
+            y: 500,
+            width: 40,
+            height: 80,
+            speed: 5,
+            moveLeft: false,
+            moveRight: false
+        };
+
+        let obstacles = [];
+        let score = 0;
+        let gameOver = false;
+
+        function createObstacle() {
+            const obstacle = {
+                x: Math.random() * (canvas.width - 40),
+                y: -80,
+                width: 40,
+                height: 80,
+                speed: 3
+            };
+            obstacles.push(obstacle);
+        }
+        function update() {
+            
+            if (car.moveLeft && car.x > 0) car.x -= car.speed;
+            if (car.moveRight && car.x < canvas.width - car.width) car.x += car.speed;
+
+            
+            obstacles.forEach((obstacle, index) => {
+                obstacle.y += obstacle.speed;
+
+                
+                if (obstacle.y > canvas.height) {
+                    obstacles.splice(index, 1);
+                    score += 5;  
+                }
+
+                
+                if (car.x < obstacle.x + obstacle.width &&
+                    car.x + car.width > obstacle.x &&
+                    car.y < obstacle.y + obstacle.height &&
+                    car.y + car.height > obstacle.y) {
+                    gameOver = true;
+                }
+            });
+
+            
+            scoreDisplay.textContent = `Score: ${score}`;
+        }
+                    
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = 'blue';
+            ctx.fillRect(car.x, car.y, car.width, car.height);
+
+            ctx.fillStyle = "red";
+            obstacles.forEach(obstacle => {
+                ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+            });
+        }
+
+        function gameLoop() {
+            if (!gameOver) {
+                update();
+                draw();
+                requestAnimationFrame(gameLoop);
+            } else {
+                over.style.display = 'flex';
+                scdis.textContent = `Your Score is: ${score}`;
+                setTimeout(function(){document.location.reload();  },3000);
+                
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') car.moveLeft = true;
+            if (e.key === 'ArrowRight') car.moveRight = true;
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if (e.key === 'ArrowLeft') car.moveLeft = false;
+            if (e.key === 'ArrowRight') car.moveRight = false;
+        });
+
+        strbtn.addEventListener('click', function(){
+            start.style.display = 'none';
+            setInterval(createObstacle, 2000);
+            gameLoop();
+        });
+        
+        
+    </script>
+</body>
+</html>
